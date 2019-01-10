@@ -1,0 +1,93 @@
+
+import groovy.json.JsonOutput
+
+Map<String, Object> vendorJson() {
+  return [
+    fileName: "freenect.json",
+    name: "freenect",
+    version: project.version,
+    uuid: "3cdffad1-6d30-472a-9717-966d590eee38",
+    mavenUrls: [
+      "https://dev.imjac.in/maven/"
+    ],
+    jsonUrl: "https://dev.imjac.in/maven/thirdparty/freenect/freenect-latest.json",
+    cppDependencies: [
+      [
+        groupId: project.group,
+        artifactId: 'libfreenect',
+        version: project.version,
+        libName: 'freenect',
+        configuration: "native_freenect",
+        headerClassifier: 'headers',
+        sharedLibrary: true,
+        skipInvalidPlatforms: true,
+        binaryPlatforms: [
+          "linuxx86-64",
+          "windowsx86-64",
+          "osxx86-64",
+          "linuxraspbian",
+          "linuxtinkerboard"
+        ]
+      ],
+      [
+        groupId: project.group,
+        artifactId: 'libfreenectDeps',
+        version: project.version,
+        libName: '',
+        configuration: "native_freenect",
+        sharedLibrary: true,
+        skipInvalidPlatforms: true,
+        binaryPlatforms: [
+          "linuxx86-64",
+          "windowsx86-64",
+          "osxx86-64",
+          "linuxraspbian",
+          "linuxtinkerboard"
+        ]
+      ]
+    ],
+  ]
+}
+
+String vendorJsonString() {
+  return JsonOutput.prettyPrint(JsonOutput.toJson(vendorJson()))
+}
+
+task generateVendorDepsJson() {
+  def outfile = new File(buildDir, "freenect.json")
+  outputs.file(outfile)
+
+  doLast {
+    outfile.text = vendorJsonString()
+  }
+}
+
+publishing {
+  publications {
+    vendordeps(MavenPublication) {
+      artifactId "freenect-FRCDeps"
+      groupId 'thirdparty.freenect'
+
+      artifact(generateVendorDepsJson.outputs.files.files[0]) {
+        builtBy generateVendorDepsJson
+      }
+    }
+  }
+}
+
+afterEvaluate {
+  publishing.repositories.all {
+    def vendorTask = task "writeLatestVendorDepsTo${name}"() {
+      def outfile = new File(new File(url), "thirdparty/freenect/freenect-latest.json")
+      outputs.file(outfile)
+
+      doLast {
+        outfile.text = vendorJsonString()
+      }
+    }
+
+    tasks.withType(PublishToMavenRepository).all {
+      dependsOn vendorTask
+    }
+  }
+}

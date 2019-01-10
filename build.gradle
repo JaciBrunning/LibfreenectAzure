@@ -1,0 +1,115 @@
+plugins {
+  id 'maven-publish'
+  id 'cpp'
+  id 'c'
+  id 'base'
+}
+apply plugin: 'edu.wpi.first.Toolchain'
+apply plugin: TinkerboardPlugin
+toolchainsPlugin.withRaspbian()
+
+import edu.wpi.first.toolchain.NativePlatforms
+
+apply from: 'publishingtools.gradle'
+apply from: 'vendordeps.gradle'
+
+group = 'thirdparty.freenect'
+version = '1.0.0'
+
+model {
+  buildTypes {
+    debug
+    release
+  }
+  components {
+    freenect(NativeLibrarySpec) {
+      targetPlatform NativePlatforms.desktop
+      targetPlatform NativePlatforms.raspbian
+      targetPlatform TinkerboardPlugin.tinkerboardPlatform
+
+      binaries.all {
+        def mac = targetPlatform.operatingSystem.isMacOsX()
+        def linux = targetPlatform.operatingSystem.isLinux()
+        def windows = targetPlatform.operatingSystem.isWindows()
+
+        sources {
+          freenect(CppSourceSet) {
+            source {
+              srcDir 'libfreenect/src'
+              include '*.c'
+            }
+            exportedHeaders {
+              srcDir 'libfreenect/include'
+              srcDir 'libfreenect/wrappers/cpp'
+              include '**/*.h', '**/*.hpp'
+            }
+          }
+        }
+
+        // We need to link libusb!
+        // We'll also package these so that they're available from the client program
+        if (linux || mac) {
+          cppCompiler.args << ('-I' + file('deps/headers').absolutePath)
+          linker.args << ('-L' + file('deps/' + targetPlatform.name).absolutePath)
+          linker.args << '-lusb-1.0'
+        }
+        if (linux) {
+          linker.args << '-ludev'
+        }
+        // TODO: Windows
+      }
+    }
+  }
+}
+
+task zipHeaders(type: Zip) {
+  from (fileTree('libfreenect/include') + fileTree(dir: 'libfreenect/wrappers/cpp', include: '**/*.hpp'))
+
+  classifier = 'headers'
+}
+
+def depClassifiers = ['linuxraspbian', 'linuxtinkerboard', NativePlatforms.desktop]
+
+depClassifiers.each { platform ->
+  task "zip${platform}Deps"(type: Zip) {
+    from fileTree('deps/' + platform)
+
+    classifier = platform
+  }
+  task "zip${platform}DepsDebug"(type: Zip) {
+    from fileTree('deps/' + platform)
+
+    classifier = platform + 'debug'
+  }
+}
+
+publishing {
+  publications {
+    freenect(MavenPublication) {
+      artifactId "libfreenect"
+
+      artifact zipHeaders {
+        classifier 'headers'
+      }
+
+      binaryArtifacts(it, 'freenect')
+    }
+
+    freenect_deps(MavenPublication) {
+      artifactId "libfreenectDeps"
+
+      depClassifiers.each { platform ->
+        artifact tasks.getByName("zip${platform}Deps") {
+          classifier platform
+        }
+        artifact tasks.getByName("zip${platform}DepsDebug") {
+          classifier (platform + 'debug')
+        }
+      }
+    }
+  }
+}
+
+wrapper {
+  gradleVersion = 5.0
+}

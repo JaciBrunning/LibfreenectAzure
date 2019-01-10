@@ -1,0 +1,6 @@
+[submodule "OIS"]
+	path = OIS
+	url = https://github.com/wgois/OIS
+[submodule "libfreenect"]
+	path = libfreenect
+	url = https://github.com/OpenKinect/libfreenect

@@ -1,0 +1,22 @@
+steps:
+- task: Gradle@2
+  inputs:
+    workingDirectory: ''
+    gradleWrapperFile: 'gradlew'
+    gradleOptions: '-Xmx3072m'
+    publishJUnitResults: false
+    testResultsFiles: '**/TEST-*.xml'
+    tasks: 'clean build publish'
+    # We don't require the rio toolchain
+    options: --stacktrace -Ptoolchain-optional-roboRio
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: 'build/mvnDistRepo'
+    contents: '**/*'
+    targetFolder: $(Build.ArtifactStagingDirectory)/mvnDistRepo
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    artifactName: 'maven'
+    pathtoPublish: $(Build.ArtifactStagingDirectory)/mvnDistRepo

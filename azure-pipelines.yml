@@ -1,0 +1,33 @@
+resources:
+  containers:
+  - container: wpilib
+    image: wpilib/roborio-cross-ubuntu:2019-18.04
+
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'VS2017-Win2016'
+  steps:
+  - checkout: self
+    submodules: true
+  - template: azure-init.yml
+  - template: azure-steps.yml
+
+- job: macOS
+  pool:
+    vmImage: 'macOS-10.13'
+  steps:
+  - checkout: self
+    submodules: true
+  - template: azure-init.yml
+  - template: azure-steps.yml
+
+- job: Linux
+  pool: 
+    vmImage: 'Ubuntu-16.04'
+  container: wpilib
+  steps:
+  - script: sudo apt-get update; sudo apt-get install -y libx11-dev
+  - checkout: self
+    submodules: true
+  - template: azure-steps.yml
