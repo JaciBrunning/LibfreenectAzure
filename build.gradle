@@ -44,9 +44,10 @@ model {
             }
             exportedHeaders {
               srcDir 'libfreenect/include'
+              srcDir 'deps/headers'
               if (windows) {
                 srcDir 'libfreenect/platform/windows'
-                srcDir 'libfreenect/platform/windows/libusb10emu/libusb-1.0'
+                // srcDir 'libfreenect/platform/windows/libusb10emu/libusb-1.0'
               }
               include '**/*.h', '**/*.hpp'
             }
@@ -56,7 +57,6 @@ model {
         // We need to link libusb!
         // We'll also package these so that they're available from the client program
         if (linux || mac) {
-          cppCompiler.args << ('-I' + file('deps/headers').absolutePath)
           linker.args << ('-L' + file('deps/' + targetPlatform.name).absolutePath)
           linker.args << '-lusb-1.0'
         }
@@ -64,7 +64,6 @@ model {
           linker.args << '-ludev'
         }
         if (windows) {
-          // cppCompiler.args << ('/I:' + file('deps/headers').absolutePath)
           linker.args << ('/LIBPATH:' + file('deps/' + targetPlatform.name).absolutePath)
           linker.args << 'libusb-1.0.dll'
         }
