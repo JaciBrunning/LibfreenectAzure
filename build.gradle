@@ -57,8 +57,8 @@ model {
           linker.args << '-ludev'
         }
         if (windows) {
-          cppCompiler.args << '/I' << file('deps/headers').absolutePath
-          linker.args << '/LIBPATH' << file('deps/' + targetPlatform.name).absolutePath
+          cppCompiler.args << ('/I:' + file('deps/headers').absolutePath)
+          linker.args << ('/LIBPATH:' + file('deps/' + targetPlatform.name).absolutePath)
           linker.args << 'libusb-1.0.dll'
         }
       }
