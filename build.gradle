@@ -65,7 +65,7 @@ model {
         }
         if (windows) {
           linker.args << ('/LIBPATH:' + file('deps/' + targetPlatform.name).absolutePath)
-          linker.args << 'libusb-1.0.dll'
+          linker.args << 'libusb-1.0.lib'
         }
       }
     }
