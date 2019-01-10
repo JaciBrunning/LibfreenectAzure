@@ -56,14 +56,18 @@ model {
         if (linux) {
           linker.args << '-ludev'
         }
-        // TODO: Windows
+        if (windows) {
+          cppCompiler.args << '/I' << file('deps/headers').absolutePath
+          linker.args << '/LIBPATH' << file('deps/' + targetPlatform.name).absolutePath
+          linker.args << 'libusb-1.0.dll'
+        }
       }
     }
   }
 }
 
 task zipHeaders(type: Zip) {
-  from (fileTree('libfreenect/include') + fileTree(dir: 'libfreenect/wrappers/cpp', include: '**/*.hpp'))
+  from fileTree('libfreenect/include')
 
   classifier = 'headers'
 }

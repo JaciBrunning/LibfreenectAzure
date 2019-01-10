@@ -1,10 +1,14 @@
 resources:
   containers:
+  - container: linux
+    image: jaci/azure-native-linux:2018.12.06
   - container: wpilib
     image: wpilib/roborio-cross-ubuntu:2019-18.04
+  - container: raspbian
+    image:  wpilib/raspbian-cross-ubuntu:18.04
 
 jobs:
-- job: Windows
+- job: windows
   pool:
     vmImage: 'VS2017-Win2016'
   steps:
@@ -22,12 +26,38 @@ jobs:
   - template: azure-init.yml
   - template: azure-steps.yml
 
-- job: Linux
+- job: linux
   pool: 
     vmImage: 'Ubuntu-16.04'
-  container: wpilib
+  container: linux
   steps:
-  - script: sudo apt-get update; sudo apt-get install -y libx11-dev
   - checkout: self
     submodules: true
   - template: azure-steps.yml
+
+
+- job: pi
+  pool: 
+    vmImage: 'Ubuntu-16.04'
+  container: raspbian
+  steps:
+  - checkout: self
+    submodules: true
+  - template: azure-steps.yml
+
+- job: tinkerboard
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  container: linux
+  steps:
+  - checkout: self
+    submodules: true
+  - task: Gradle@2
+    inputs:
+      workingDirectory: ''
+      gradleWrapperFile: 'gradlew'
+      tasks: 'installTinkerboardToolchain'
+      options: '-Ptoolchain-optional-roboRio'
+  - template: azure-steps.yml
+    parameters:
+      args: '-Pno-roborio'
