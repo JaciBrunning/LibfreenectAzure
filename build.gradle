@@ -36,14 +36,18 @@ model {
           freenect(CppSourceSet) {
             source {
               srcDir 'libfreenect/src'
-              if (windows)
+              if (windows) {
                 srcDir 'libfreenect/platform/windows'
+                srcDir 'libfreenect/platform/windows/libusb10emu/libusb-1.0'
+              }
               include '*.c'
             }
             exportedHeaders {
               srcDir 'libfreenect/include'
-              if (windows)
+              if (windows) {
                 srcDir 'libfreenect/platform/windows'
+                srcDir 'libfreenect/platform/windows/libusb10emu/libusb-1.0'
+              }
               include '**/*.h', '**/*.hpp'
             }
           }
