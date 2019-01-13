@@ -54,9 +54,12 @@ model {
           }
         }
 
-        binaries.all {
-          if (buildType.name == 'debug') {
+        if (buildType.name == 'debug') {
+          if (linux || mac) {
             cCompiler.args << '-g' << '-Og'
+          } else {
+            cCompiler.args << '/Od' << '/MDd'
+            linker.args << '/DEBUG:FULL'
           }
         }
 
