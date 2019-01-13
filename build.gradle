@@ -65,16 +65,18 @@ model {
 
         // We need to link libusb!
         // We'll also package these so that they're available from the client program
-        if (linux || mac) {
-          linker.args << ('-L' + file('deps/' + targetPlatform.name).absolutePath)
-          linker.args << '-lusb-1.0'
-        }
-        if (linux) {
-          linker.args << '-ludev'
-        }
-        if (windows) {
-          linker.args << ('/LIBPATH:' + file('deps/' + targetPlatform.name).absolutePath)
-          linker.args << 'libusb-1.0.lib'
+        if (!(linux && targetPlatform.name == NativePlatforms.desktop)) {
+          if (linux || mac) {
+            linker.args << ('-L' + file('deps/' + targetPlatform.name).absolutePath)
+            linker.args << '-lusb-1.0'
+          }
+          if (linux) {
+            linker.args << '-ludev'
+          }
+          if (windows) {
+            linker.args << ('/LIBPATH:' + file('deps/' + targetPlatform.name).absolutePath)
+            linker.args << 'libusb-1.0.lib'
+          }
         }
       }
     }
