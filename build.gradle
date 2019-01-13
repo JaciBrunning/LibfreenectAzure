@@ -14,7 +14,7 @@ apply from: 'publishingtools.gradle'
 apply from: 'vendordeps.gradle'
 
 group = 'thirdparty.freenect'
-version = '1.0.0'
+version = '1.0.1'
 
 model {
   buildTypes {
@@ -51,6 +51,12 @@ model {
               }
               include '**/*.h', '**/*.hpp'
             }
+          }
+        }
+
+        binaries.all {
+          if (buildType.name == 'debug') {
+            cCompiler.args << '-g' << '-Og'
           }
         }
 
