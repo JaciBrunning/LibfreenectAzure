@@ -15,7 +15,11 @@ model {
                 def source = (shared ? bin.sharedLibraryFile : bin.staticLibraryFile)
 
                 def zipTask = task "zip${taskSuffix}"(type: Zip) {
-                    from(source)
+                    def allsrc = [source]
+                    if (shared && bin.targetPlatform.operatingSystem.isWindows()) {
+                        allsrc << bin.sharedLibraryLinkFile
+                    }
+                    from(allsrc as Set<File>)
                     into(targetPlatform.name)
 
                     baseName = component.name
